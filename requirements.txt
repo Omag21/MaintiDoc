@@ -1,0 +1,30 @@
+# MaintiDoc SAN — dépendances Python (Python >= 3.14)
+# Installation : pip install -r requirements.txt
+# Ollama s'installe à part : https://ollama.com/download
+
+# Extraction du PDF et manipulation des données
+pymupdf>=2.0
+pandas>=3.1.0
+numpy>=2.5.4
+pillow>=13.0.0
+tabulate>=0.10.0
+matplotlib>=3.11.2
+
+# Index texte (LlamaIndex + BGE-M3) et image (CLIP)
+llama-index-core>=0.14.25
+llama-index-embeddings-huggingface>=0.8.0
+sentence-transformers>=6.2.0
+
+# Base vectorielle Qdrant
+qdrant-client>=1.20.0
+llama-index-vector-stores-qdrant>=0.10.4
+
+# Génération locale
+ollama>=0.6.3
+
+# Application web (app.py)
+streamlit>=1.66.1
+
+# Notebook
+ipython>=9.17.1
+ipykernel>=7.4.0

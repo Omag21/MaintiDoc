@@ -1,0 +1,37 @@
+[project]
+name = "maintidoc-san"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Omag21", email = "gedeonakoubouangokelele@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "ipython>=9.17.1",
+    "llama-index-core>=0.14.25",
+    "llama-index-embeddings-huggingface>=0.8.0",
+    "llama-index-vector-stores-qdrant>=0.10.4",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.4",
+    "ollama>=0.6.3",
+    "pandas>=3.1.0",
+    "pillow>=13.0.0",
+    "pymupdf>=2.0",
+    "qdrant-client>=1.20.0",
+    "sentence-transformers>=6.2.0",
+    "streamlit>=1.66.1",
+    "tabulate>=0.10.0",
+]
+
+[project.scripts]
+maintidoc-san = "maintidoc_san:main"
+
+[build-system]
+requires = ["uv_build>=0.12.23,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.4.0",
+]
