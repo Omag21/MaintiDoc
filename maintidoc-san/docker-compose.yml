@@ -1,0 +1,21 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.20.0
+    container_name: maintidoc-qdrant
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6333:6333"   # API REST, exposée en local uniquement
+      - "127.0.0.1:6334:6334"   # gRPC
+    environment:
+      QDRANT__SERVICE__API_KEY: ${MAINTIDOC_QDRANT_API_KEY:?Définir MAINTIDOC_QDRANT_API_KEY dans .env}
+      QDRANT__TELEMETRY_DISABLED: "true"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  qdrant_storage:

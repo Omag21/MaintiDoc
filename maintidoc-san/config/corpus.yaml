@@ -1,0 +1,12 @@
+# Registre du corpus MaintiDoc.
+# Chemins relatifs à ce fichier. Chaque document déclare sa version,
+# son type d'équipement et les groupes autorisés à le consulter.
+documents:
+  - document_id: SAN-MAN-001
+    path: ../corpus/Manuel_Maintenance_SAN_Projet_Integrateur.pdf
+    title: Manuel de maintenance SAN-LAB 2000
+    version: "1.1"
+    equipment_type: SAN-LAB-2000
+    equipment_family: stockage_san
+    access_groups: [technicien, responsable_maintenance]
+    language: fr
