@@ -2,6 +2,7 @@
 
 Idempotent : un document dont l'empreinte SHA-256 est déjà indexée est ignoré.
 Un document modifié est réindexé, puis ses anciens points sont supprimés.
+Étape 2 : chaque passage reçoit aussi un vecteur BM25 ; les schémas passent par l'OCR.
 """
 from __future__ import annotations
 
@@ -17,7 +18,9 @@ import yaml
 from .config import Settings
 from .embeddings import Embedder, ImageEmbedder
 from .extraction import extract_document, sha256_bytes
+from .ocr import OCREngine, RapidOCREngine
 from .schemas import DocumentSpec
+from .sparse import document_vector
 from .vector_store import VectorStore
 
 log = logging.getLogger("maintidoc.ingest")
@@ -53,10 +56,12 @@ def load_corpus(corpus_file: Path) -> list[DocumentSpec]:
 
 class Ingestor:
     def __init__(self, store: VectorStore, text_embedder: Embedder, image_embedder: ImageEmbedder,
-                 settings: Settings):
+                 settings: Settings, ocr: OCREngine | None = None):
         self.store, self.text_embedder, self.image_embedder = store, text_embedder, image_embedder
         self.settings = settings
-        self.store.ensure_collection(settings.text_collection, text_embedder.dimension)
+        # OCR désactivable (MAINTIDOC_OCR_ENABLED=false) ; un faux moteur peut être injecté (tests).
+        self.ocr = ocr if ocr is not None else (RapidOCREngine() if settings.ocr_enabled else None)
+        self.store.ensure_collection(settings.text_collection, text_embedder.dimension, hybrid=True)
         self.store.ensure_collection(settings.visual_collection, image_embedder.dimension)
 
     def is_up_to_date(self, spec: DocumentSpec, sha: str) -> bool:
@@ -72,10 +77,12 @@ class Ingestor:
             log.info("%s inchangé (%s), ignoré", spec.document_id, sha[:12])
             return IngestReport(spec.document_id, spec.version, sha, "unchanged")
 
-        doc = extract_document(spec, self.settings, pdf_bytes=data)
+        doc = extract_document(spec, self.settings, pdf_bytes=data, ocr=self.ocr)
         s = self.settings
-        text_vectors = self.text_embedder.embed_texts([t.text for t in doc.texts]) if doc.texts else []
-        n_text = self.store.upsert(s.text_collection, doc.texts, text_vectors)
+        passages = [t.text for t in doc.texts]
+        text_vectors = self.text_embedder.embed_texts(passages) if passages else []
+        sparse_vectors = [document_vector(t, s.bm25_avg_doc_tokens) for t in passages]
+        n_text = self.store.upsert(s.text_collection, doc.texts, text_vectors, sparse_vectors)
 
         image_paths = [str(s.data_dir / v.image_path) for v in doc.visuals]
         image_vectors = self.image_embedder.embed_images(image_paths) if image_paths else []
@@ -129,6 +136,8 @@ class Ingestor:
             "visual_collection": s.visual_collection,
             "text_embedding_model": self.text_embedder.model_name,
             "image_embedding_model": self.image_embedder.model_name,
+            "sparse": "bm25 (IDF calculé par Qdrant)",
+            "ocr": type(self.ocr).__name__ if self.ocr else None,
             "documents": [asdict(r) for r in reports],
         }
         (s.data_dir / "index_manifest.json").write_text(

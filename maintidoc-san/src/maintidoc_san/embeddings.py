@@ -39,8 +39,7 @@ class BGEM3Embedder:
     def __init__(self, model_name: str = "BAAI/bge-m3", device: str = "cpu", batch_size: int = 8):
         self.model_name, self.device, self.batch_size = model_name, device, batch_size
         self._model = _sentence_transformer(model_name, device)
-        self.dimension = self._model.get_sentence_embedding_dimension()
-
+        self.dimension = self._model.get_embedding_dimension()
     def embed_texts(self, texts: Sequence[str]) -> np.ndarray:
         vectors = self._model.encode(list(texts), batch_size=self.batch_size,
                                      normalize_embeddings=True, show_progress_bar=len(texts) > 16)

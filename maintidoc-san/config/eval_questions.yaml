@@ -1,0 +1,45 @@
+# Jeu de questions du manuel (section 7) et sources attendues.
+# Une source est trouvée si un résultat remplit TOUTES ses conditions :
+#   figure_id : la figure elle-même (image, légende ou texte OCR du schéma)
+#   section   : un élément de cette section du manuel
+#   page      : un élément de cette page
+#   contains  : le texte de l'élément contient ce code (casse et accents ignorés)
+# La section 7 est exclue de l'index (corpus.yaml) : les questions ne doivent pas
+# se retrouver elles-mêmes dans les résultats.
+questions:
+  - id: Q01
+    question: Quel est le role des deux fabrics ?
+    sources: [{figure_id: FIG-01}, {figure_id: FIG-02}]
+  - id: Q02
+    question: Ou intervient le zoning ?
+    sources: [{figure_id: FIG-02}]
+  - id: Q03
+    question: Que signifie MPIO ?
+    sources: [{section: "2"}]
+  - id: Q04
+    question: Le disque B03 a-t-il un antecedent ?
+    sources: [{contains: INC-117}, {figure_id: FIG-03}]
+  - id: Q05
+    question: Quel est le sens de AL-01 ?
+    sources: [{page: 5, contains: AL-01}]   # ALARM-TAB-01 : tableau des alarmes
+  - id: Q06
+    question: Le voyant orange permet-il un diagnostic certain ?
+    sources: [{section: "4"}]
+  - id: Q07
+    question: Que faut-il verifier avant un ticket ?
+    sources: [{contains: PROC-SAN-01}]
+  - id: Q08
+    question: Qui doit approuver la creation du ticket ?
+    sources: [{section: "5"}]
+  - id: Q09
+    question: Quelle procedure correspond a une perte de chemin ?
+    sources: [{contains: DIAG-FC-01}]
+  - id: Q10
+    question: Peut-on declencher un failover depuis MaintiDoc ?
+    sources: [{section: "5"}]
+  - id: Q11
+    question: Quelle alerte touche la capacite ?
+    sources: [{contains: AL-04}]
+  - id: Q12
+    question: Quels elements retrouve-t-on dans le ticket exemple ?
+    sources: [{section: "6"}]

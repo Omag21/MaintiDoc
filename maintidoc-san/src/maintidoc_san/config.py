@@ -28,32 +28,49 @@ def _load_dotenv(path: Path) -> None:
 
 class Settings(BaseModel):
     # --- Qdrant -----------------------------------------------------------
-    # Serveur (Docker Compose) par défaut. QDRANT_PATH active le mode local
-    # (dossier) ; QDRANT_PATH=":memory:" sert aux tests.
     qdrant_url: str = "http://localhost:6333"
     qdrant_api_key: str | None = None
     qdrant_path: str | None = None
 
-    # Version du schéma d'index : l'incrémenter si le découpage ou les modèles changent.
-    index_version: str = "v1"
+    # v2 : vecteurs nommés (dense + BM25), lignes de tableaux, OCR -> nouvelles collections.
+    index_version: str = "v2"
     text_collection_prefix: str = "maintidoc_text"
     visual_collection_prefix: str = "maintidoc_visual"
 
-    # --- Modèles d'embeddings -----------------------------------------------
+    # --- Modèles ----------------------------------------------------------------
     text_embedding_model: str = "BAAI/bge-m3"
-    # Encodeur d'images CLIP + encodeur de requêtes multilingue aligné sur le même espace.
     image_embedding_model: str = "sentence-transformers/clip-ViT-B-32"
     visual_query_model: str = "sentence-transformers/clip-ViT-B-32-multilingual-v1"
+    # Petit reranker multilingue (cross-encoder) : adaptable par fine-tuning à l'étape 6.
+    reranker_model: str = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"
     embedding_device: str = "cpu"
     embedding_batch_size: int = 8
 
     # --- Corpus et données ------------------------------------------------------
     corpus_file: Path = PROJECT_ROOT / "config" / "corpus.yaml"
+    eval_file: Path = PROJECT_ROOT / "config" / "eval_questions.yaml"
     data_dir: Path = PROJECT_ROOT / "data"
 
-    # --- Découpage ----------------------------------------------------------------
-    chunk_max_chars: int = Field(default=1200, ge=200)
+    # --- Extraction ---------------------------------------------------------------
+    chunk_max_chars: int = Field(default=800, ge=200)
     min_image_side: int = Field(default=80, ge=1)
+    ocr_enabled: bool = True
+    ocr_min_page_chars: int = Field(default=30, ge=0)  # en dessous : page considérée comme scannée
+    ocr_dpi: int = Field(default=200, ge=72)
+
+    # --- Recherche (étape 2) ------------------------------------------------------
+    bm25_avg_doc_tokens: float = Field(default=60.0, gt=0)
+    candidates_per_source: int = Field(default=20, ge=1)  # profondeur de chaque recherche
+    rrf_k: int = Field(default=60, ge=1)
+    visual_weight: float = Field(default=0.5, ge=0)  # poids de la liste CLIP dans la fusion
+    rerank_enabled: bool = True
+    rerank_blend: float = Field(default=0.3, ge=0, le=1)  # part du score de fusion conservée
+    min_rerank_score: float = Field(default=0.05, ge=0, le=1)  # sous ce seuil : pas une preuve
+    relative_rerank_score: float = Field(default=0.2, ge=0, le=1)  # fraction du meilleur score
+    max_evidence: int = Field(default=5, ge=1)
+    max_evidence_per_page: int = Field(default=2, ge=1)
+    evidence_char_budget: int = Field(default=4000, ge=500)
+    citation_support_threshold: float = Field(default=0.3, ge=0, le=1)
 
     @property
     def text_collection(self) -> str:

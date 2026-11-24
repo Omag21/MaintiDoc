@@ -10,3 +10,4 @@ documents:
     equipment_family: stockage_san
     access_groups: [technicien, responsable_maintenance]
     language: fr
+    exclude_sections: ["7"]
